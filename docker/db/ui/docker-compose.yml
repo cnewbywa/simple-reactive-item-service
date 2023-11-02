@@ -1,0 +1,20 @@
+version: "3.8"
+
+networks:
+    events:
+        external: true
+        name: db_item-reactive-network
+
+services:
+    mongo-express:
+        image: mongo-express:latest
+        networks:
+          - events
+        restart: always
+        ports:
+          - 8081:8081
+        environment:
+          - ME_CONFIG_MONGODB_ADMINUSERNAME=root
+          - ME_CONFIG_MONGODB_ADMINPASSWORD=b4wV2g7Zp-
+          - ME_CONFIG_MONGODB_URL=mongodb://root:b4wV2g7Zp-@mongo:27017/
+

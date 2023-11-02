@@ -1,0 +1,32 @@
+version: "3.8"
+
+networks:
+    item-reactive-network:
+        driver: bridge
+        ipam:
+            driver: default
+            config:
+                - subnet: 172.51.0.0/16
+
+secrets:
+    mongo_root_password:
+        file: ~/docker/container_configs/item-reactive/mongo_root_password
+
+services:
+    mongo:
+        image: mongo:7.0
+        networks:
+            - item-reactive-network
+        volumes:
+            - ~/docker/container_storage/item-reactive/db:/data/db
+            - ~/docker/container_logs/item-reactive/db:/var/log/mongodb
+            - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js
+        secrets:
+            - mongo_root_password
+        ports:
+            - 27017:27017
+        environment:
+            - MONGO_INITDB_ROOT_USERNAME=root
+            - MONGO_INITDB_ROOT_PASSWORD_FILE=/run/secrets/mongo_root_password
+            - MONGO_INITDB_DATABASE=items
+            - MONGO_INITDB_PASSWORD=${ITEM_PASSWORD}

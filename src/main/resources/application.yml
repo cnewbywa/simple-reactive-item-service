@@ -1,0 +1,51 @@
+spring:
+  profiles:
+    default: docker
+  data:
+    mongodb:
+      database: items
+  ssl:
+    bundle:
+      jks:
+        simple-rest-service:
+          key:
+            alias: itemservice
+          keystore:
+            location: classpath:keystore.p12
+            password: ${item.keystore.password}
+            type: PKCS12
+
+server:
+  port: 9443
+  ssl:
+    bundle: simple-rest-service
+  
+---
+
+spring:
+  config:
+    activate:
+      on-profile: local
+  data:
+    mongodb:
+      uri: mongodb://item:${ITEM_PASSWORD}@localhost:27017/items?authSource=admin
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://cnewbywa.auth/realms/item
+      
+---
+
+spring:
+  config:
+    activate:
+      on-profile: docker
+  data:
+    mongodb:
+      uri: mongodb://item:${ITEM_PASSWORD}@mongo:27017/items?authSource=admin
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://cnewbywa.auth/realms/item
