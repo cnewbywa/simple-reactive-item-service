@@ -96,17 +96,7 @@
         				<buildArg>-march=native</buildArg>
         				<buildArg>-Djavax.net.ssl.trustStore=./cacert/cacerts</buildArg>
     				</buildArgs>
-    				
 				</configuration>
-				<executions>
-        			<execution>
-            			<id>build-native</id>
-            			<goals>
-                			<goal>compile-no-fork</goal>
-            			</goals>
-            			<phase>package</phase>
-        			</execution>
-    			</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
@@ -118,6 +108,11 @@
 							<artifactId>lombok</artifactId>
 						</exclude>
 					</excludes>
+					<image>
+            			<bindings>
+                			<binding>${basedir}/bindings/ca-certificates:/platform/bindings/ca-certificates</binding>
+            			</bindings>
+        			</image>
 				</configuration>
 			</plugin>
 		</plugins>

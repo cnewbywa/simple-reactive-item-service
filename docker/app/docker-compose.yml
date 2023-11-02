@@ -1,0 +1,20 @@
+version: "3.8"
+
+networks:
+    items:
+        external: true
+        name: db_item-reactive-network
+    common:
+        external: true
+        name: internal-network
+
+services:
+    # item
+    item:
+        image: simple-reactive-item-service:0.0.1-SNAPSHOT
+        env_file: ./.env
+        networks:
+            - items
+            - common
+        ports:
+            - 9443:9443
