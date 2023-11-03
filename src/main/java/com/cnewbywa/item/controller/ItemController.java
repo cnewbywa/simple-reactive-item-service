@@ -48,7 +48,7 @@ public class ItemController {
 	
 	@DeleteMapping(path = "/{id}")
 	@ResponseStatus(HttpStatus.OK)
-	public Mono<Void> deleteIrem(@PathVariable String id) {
+	public Mono<Void> deleteItem(@PathVariable String id) {
 		return itemService.deleteItem(id);
 	}
 	
