@@ -36,7 +36,7 @@ public class ItemController {
 	
 	@GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.OK)
-	public Mono<ItemResponseDto> getIrem(@PathVariable String id) {
+	public Mono<ItemResponseDto> getItem(@PathVariable String id) {
 		return itemService.getItem(id);
 	}
 	
