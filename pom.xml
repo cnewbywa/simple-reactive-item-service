@@ -94,7 +94,6 @@
 				<configuration>
     				<buildArgs>
         				<buildArg>-march=native</buildArg>
-        				<buildArg>-Djavax.net.ssl.trustStore=./cacert/cacerts</buildArg>
     				</buildArgs>
 				</configuration>
 			</plugin>
