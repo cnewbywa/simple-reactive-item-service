@@ -1,0 +1,23 @@
+spring:
+  data:
+    mongodb:
+      database: items
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/item
+  ssl:
+    bundle:
+      jks:
+        simple-rest-service:
+          key:
+            alias: itemservice
+          keystore:
+            location: classpath:keystore.p12
+            password: itemservice
+            type: PKCS12
+
+server:
+  ssl:
+    bundle: simple-rest-service
