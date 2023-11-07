@@ -17,8 +17,7 @@ public class SecurityConf {
 		http
 			.csrf(CsrfSpec::disable)
 			.authorizeExchange(authorize -> authorize.pathMatchers("/actuator/health", "/v3/api-docs/**", "/swagger-ui/**", "/webjars/swagger-ui/**").permitAll().anyExchange().authenticated())
-			.oauth2ResourceServer(oauth2ResourceServer -> oauth2ResourceServer.jwt(Customizer.withDefaults()))
-			.redirectToHttps(Customizer.withDefaults());
+			.oauth2ResourceServer(oauth2ResourceServer -> oauth2ResourceServer.jwt(Customizer.withDefaults()));
 		
 		return http.build();
 	}
