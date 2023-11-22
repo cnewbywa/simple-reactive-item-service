@@ -27,7 +27,7 @@ Native image: `./mvnw -Pnative clean spring-boot:build-image`
 #### Prerequisites
 * bindings/ca-certificates/ca.crt needs to be added to the local ca truststore when service is run locally
 * cnewbywa.auth needs to be added to /etc/hosts or OSX/Windows equivalent when service is run locally
-* Mongo db has been started. Can be started with docker/db/start.sh which uses [Docker Compose](https://docs.docker.com/compose/) to start a pre-configured container
+* Mongo db has been started. Can be started with docker/db/start.sh which uses [Docker Compose](https://docs.docker.com/compose/) to start a pre-configured container. Please note that a docker secret (mongo_root_password) needs to be created before starting. Location of it is set in docker-compose.yml.
 * Auth service has been started. Can be started with docker/runtime/auth/start-auth.sh in common-services repository which uses Docker Compose to start a pre-configured container
 
 #### Start
