@@ -46,7 +46,7 @@ spring:
       on-profile: docker
   data:
     mongodb:
-      uri: mongodb://item:${ITEM_PASSWORD}@mongo:27017/items?authSource=admin
+      uri: mongodb://item:${ITEM_PASSWORD}@item_db:27017/items?authSource=admin
   security:
     oauth2:
       resourceserver:
