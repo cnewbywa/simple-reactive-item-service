@@ -10,7 +10,7 @@ networks:
 
 services:
     # item
-    item:
+    reactive-item:
         image: simple-reactive-item-service:0.0.1-SNAPSHOT
         env_file: ./.env
         networks:
