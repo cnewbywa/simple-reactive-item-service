@@ -15,6 +15,16 @@ This project uses a subset of the features in [item-service](https://github.com/
 * [GraalVM](https://www.graalvm.org/) for native executable
 * GraalVM and [Docker](https://www.docker.com/) for native image
 
+#### Testing
+```
+./mvnw clean verify
+```
+
+With code coverage report (for both unit and integration tests):
+
+```
+./mvnw clean verify jacoco:report jacoco:report-integration
+```
 #### Build
 Jar running on JVM: 
 
