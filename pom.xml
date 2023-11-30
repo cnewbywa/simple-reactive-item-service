@@ -153,7 +153,7 @@
 				<configuration>
 					<skipTests>${skip.unit.tests}</skipTests>
 					<excludes>
-						<exclude>**/IntegrationTest.java</exclude>
+						<exclude>**/*IntegrationTest.java</exclude>
 					</excludes>
 				</configuration>
 			</plugin>
@@ -162,7 +162,7 @@
 				<artifactId>maven-failsafe-plugin</artifactId>
 				<configuration>
 					<includes>
-						<include>**/IntegrationTest.java</include>
+						<include>**/*IntegrationTest.java</include>
 					</includes>
 				</configuration>
 				<executions>
