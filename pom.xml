@@ -17,6 +17,7 @@
 		<java.version>17</java.version>
 		<springdoc.version>2.2.0</springdoc.version>
 		<event-message.version>1.1.0</event-message.version>
+		<jacoco.version>0.8.11</jacoco.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -152,7 +153,7 @@
 				<configuration>
 					<skipTests>${skip.unit.tests}</skipTests>
 					<excludes>
-						<exclude>**/IntegrationTest.java</exclude>
+						<exclude>**/*IntegrationTest.java</exclude>
 					</excludes>
 				</configuration>
 			</plugin>
@@ -161,7 +162,7 @@
 				<artifactId>maven-failsafe-plugin</artifactId>
 				<configuration>
 					<includes>
-						<include>**/IntegrationTest.java</include>
+						<include>**/*IntegrationTest.java</include>
 					</includes>
 				</configuration>
 				<executions>
@@ -177,6 +178,25 @@
 					</execution>
 				</executions>
 			</plugin>
+			<plugin>
+      			<groupId>org.jacoco</groupId>
+      			<artifactId>jacoco-maven-plugin</artifactId>
+      			<version>${jacoco.version}</version>
+      			<executions>
+        			<execution>
+						<id>prepare-agent</id>
+            			<goals>
+                			<goal>prepare-agent</goal>
+            			</goals>
+        			</execution>
+        			<execution>
+						<id>prepare-agent-integration</id>
+						<goals>
+							<goal>prepare-agent-integration</goal>
+						</goals>
+					</execution>
+      			</executions>
+    		</plugin>
 		</plugins>
 	</build>
 
