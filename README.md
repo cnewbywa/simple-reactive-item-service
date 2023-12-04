@@ -12,6 +12,7 @@ This project uses a subset of the features in [item-service](https://github.com/
 ### Building the service
 
 #### Prerequisites
+* This project uses the [cnewbywa-spring-parent](https://github.com/cnewbywa/cnewbywa-spring-parent) project as the parent project, so it needs to be installed before this project can be built
 * [GraalVM](https://www.graalvm.org/) for native executable
 * GraalVM and [Docker](https://www.docker.com/) for native image
 
