@@ -11,6 +11,8 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -27,6 +29,9 @@ import reactor.test.StepVerifier;
 @ExtendWith(MockitoExtension.class)
 class ItemServiceTest {
 
+	@Captor
+	ArgumentCaptor<Item> itemCaptor;
+	
 	@InjectMocks
 	private ItemService itemService;
 	
@@ -77,6 +82,8 @@ class ItemServiceTest {
 		
 		Mono<ItemResponseDto> responseMono = itemService.addItem(itemDto, "user1");
 		
+		// assert response
+		
 		assertNotNull(responseMono);
 		
 		ItemResponseDto response = responseMono.block();
@@ -87,7 +94,17 @@ class ItemServiceTest {
 		assertNotNull(response.getCreateTime());
 		assertEquals("user1", response.getCreatedBy());
 		
-		verify(itemRepository).save(any(Item.class));
+		verify(itemRepository).save(itemCaptor.capture());
+		
+		// assert values in mocked save
+		
+		Item capturedItem = itemCaptor.getValue();
+		
+		assertNotNull(capturedItem);
+		assertNotNull(capturedItem.getItemId());
+		assertEquals(itemDto.getName(), capturedItem.getName());
+		assertEquals(itemDto.getDescription(), capturedItem.getDescription());
+		assertEquals("user1", capturedItem.getCreatedBy());
 	}
 	
 	@Test
@@ -107,6 +124,8 @@ class ItemServiceTest {
 		
 		Mono<ItemResponseDto> responseMono = itemService.updateItem(item1Id, itemDto, "user1");
 		
+		// assert response
+		
 		assertNotNull(responseMono);
 		
 		ItemResponseDto response = responseMono.block();
@@ -120,7 +139,17 @@ class ItemServiceTest {
 		assertEquals("user1", response.getUpdatedBy());
 		
 		verify(itemRepository).findByItemId(item1Id);
-		verify(itemRepository).save(any(Item.class));
+		verify(itemRepository).save(itemCaptor.capture());
+		
+		// assert values in mocked save
+		
+		Item capturedItem = itemCaptor.getValue();
+		
+		assertNotNull(capturedItem);
+		assertEquals(item1Id, capturedItem.getItemId());
+		assertEquals(itemDto.getName(), capturedItem.getName());
+		assertEquals(itemDto.getDescription(), capturedItem.getDescription());
+		assertEquals("user1", capturedItem.getUpdatedBy());
 	}
 	
 	@Test
