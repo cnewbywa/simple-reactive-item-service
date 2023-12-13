@@ -4,7 +4,7 @@
 This project uses a subset of the features in [item-service](https://github.com/cnewbywa/item-service), built with [Spring Webflux](https://docs.spring.io/spring-framework/reference/web/webflux.html) using reactive libraries and supporting native builds.
 
 ### Features
-* Reactive rest service for adding, deleting and fetching an item
+* Reactive rest service for adding, modifying, deleting and fetching an item
 * [OpenAPI](https://www.openapis.org/) support with [Swagger UI](https://swagger.io/tools/swagger-ui/)
 * Persisting items in a [Mongo](https://www.mongodb.com/) database
 * [OAuth2](https://oauth.net/2/) support using [Keycloak](https://www.keycloak.org/)
