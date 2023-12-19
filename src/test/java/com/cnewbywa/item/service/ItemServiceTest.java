@@ -16,13 +16,19 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 
 import com.cnewbywa.item.error.ItemNotFoundException;
 import com.cnewbywa.item.model.Item;
 import com.cnewbywa.item.model.ItemDto;
+import com.cnewbywa.item.model.ItemListResponseDto;
 import com.cnewbywa.item.model.ItemResponseDto;
+import com.cnewbywa.item.model.ItemsResponseDto;
 import com.cnewbywa.item.repository.ItemRepository;
 
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -39,6 +45,7 @@ class ItemServiceTest {
 	private ItemRepository itemRepository;
 	
 	private String item1Id = UUID.randomUUID().toString();
+	private String item2Id = UUID.randomUUID().toString();
 	
 	@Test
 	void testGetItem_Success() {
@@ -67,6 +74,89 @@ class ItemServiceTest {
 		StepVerifier.create(responseMono).expectError(ItemNotFoundException.class).verify();
 		
 		verify(itemRepository).findByItemId(item1Id);
+	}
+	
+	@Test
+	void testGetItems() {
+		Item dbItem1 = Item.builder().itemId(item1Id).name("Item 1").createTime(Instant.now()).build();
+		Item dbItem2 = Item.builder().itemId(item2Id).name("Item 2").createTime(Instant.now()).build();
+		
+		Sort sort = Sort.by(new Sort.Order(Sort.Direction.ASC, "name"));
+		
+		when(itemRepository.findAll(sort)).thenReturn(Flux.just(dbItem1, dbItem2));
+		
+		Flux<ItemListResponseDto> items = itemService.getItems(sort);
+		
+		StepVerifier.create(items)
+			.consumeNextWith(item -> {
+				assertEquals(dbItem1.getItemId(), item.getId());
+				assertEquals(dbItem1.getName(), item.getName());
+				assertNotNull(item.getCreateTime());
+			})
+			.consumeNextWith(item -> {
+				assertEquals(dbItem2.getItemId(), item.getId());
+				assertEquals(dbItem2.getName(), item.getName());
+				assertNotNull(item.getCreateTime());
+			})
+			.verifyComplete();
+		
+		verify(itemRepository).findAll(sort);
+	}
+	
+	@Test
+	void testGetItemsWithPaging() {
+		Item dbItem1 = Item.builder().itemId(item1Id).name("Item 1").createTime(Instant.now()).build();
+		Item dbItem2 = Item.builder().itemId(item2Id).name("Item 2").createTime(Instant.now()).build();
+		
+		Pageable pageable = PageRequest.of(0, 10, Sort.by(new Sort.Order(Sort.Direction.ASC, "name")));
+		
+		when(itemRepository.findBy(pageable)).thenReturn(Flux.just(dbItem1, dbItem2));
+		when(itemRepository.count()).thenReturn(Mono.just(3L));
+		
+		Mono<ItemsResponseDto> responseMono = itemService.getItemsWithPaging(pageable);
+		
+		assertNotNull(responseMono);
+		
+		ItemsResponseDto response = responseMono.block();
+		
+		assertNotNull(response);
+		assertEquals(2, response.getAmount());
+		assertEquals(3, response.getTotalAmount());
+		assertNotNull(response.getItems());
+		assertEquals(2, response.getItems().size());
+		assertListResponseDto(response.getItems().get(0), dbItem1);
+		assertListResponseDto(response.getItems().get(1), dbItem2);
+		
+		verify(itemRepository).findBy(pageable);
+		verify(itemRepository).count();
+	}
+	
+	@Test
+	void testGetItemsWithSkipAndTake() {
+		Item dbItem1 = Item.builder().itemId(item1Id).name("Item 1").createTime(Instant.now()).build();
+		Item dbItem2 = Item.builder().itemId(item2Id).name("Item 2").createTime(Instant.now()).build();
+		
+		Pageable pageable = PageRequest.of(0, 10, Sort.by(new Sort.Order(Sort.Direction.ASC, "name")));
+		
+		when(itemRepository.findAll(pageable.getSort())).thenReturn(Flux.just(dbItem1, dbItem2));
+		when(itemRepository.count()).thenReturn(Mono.just(3L));
+		
+		Mono<ItemsResponseDto> responseMono = itemService.getItemsWithSkipAndTake(pageable);
+		
+		assertNotNull(responseMono);
+		
+		ItemsResponseDto response = responseMono.block();
+		
+		assertNotNull(response);
+		assertEquals(2, response.getAmount());
+		assertEquals(3, response.getTotalAmount());
+		assertNotNull(response.getItems());
+		assertEquals(2, response.getItems().size());
+		assertListResponseDto(response.getItems().get(0), dbItem1);
+		assertListResponseDto(response.getItems().get(1), dbItem2);
+		
+		verify(itemRepository).findAll(pageable.getSort());
+		verify(itemRepository).count();
 	}
 	
 	@Test
@@ -170,5 +260,11 @@ class ItemServiceTest {
 		itemService.deleteItem(item1Id);
 		
 		verify(itemRepository).deleteByItemId(item1Id);
+	}
+	
+	private void assertListResponseDto(ItemListResponseDto receivedItemListResponseDto, Item dbItem) {
+		assertEquals(dbItem.getItemId(), receivedItemListResponseDto.getId());
+		assertEquals(dbItem.getName(), receivedItemListResponseDto.getName());
+		assertNotNull(receivedItemListResponseDto.getCreateTime());
 	}
 }
