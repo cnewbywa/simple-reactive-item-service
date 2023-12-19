@@ -114,6 +114,38 @@ class ItemControllerIntegrationTest {
 	}
 	
 	@Test
+	void testUpdateItem() {
+		ItemDto input = new ItemDto("Item 1", "New description for Item 1");
+		
+		webClient
+        	.put().uri("/items/" + item1Id).bodyValue(input)
+        	.exchange()
+        	.expectStatus().isOk()
+        	.expectHeader().contentType(MediaType.APPLICATION_JSON)
+        	.expectBody(ItemResponseDto.class)
+        	.consumeWith(result -> {
+    			ItemResponseDto dto = result.getResponseBody();
+    			
+    			assertNotNull(dto);
+    			assertNotNull(dto.getId());
+    			assertEquals("Item 1", dto.getName());
+    			assertEquals("New description for Item 1", dto.getDescription());
+    			assertNotNull(dto.getUpdateTime());
+    			assertEquals("user", dto.getUpdatedBy());
+    		});
+	}
+	
+	@Test
+	void testUpdateItem_NotFound() {
+		ItemDto input = new ItemDto("Item 9", "New description for Item 9");
+		
+		webClient
+        	.put().uri("/items/2d579439-1d07-4411-9be1-c2f466244f5e").bodyValue(input)
+        	.exchange()
+        	.expectStatus().isNotFound();
+	}
+	
+	@Test
 	void testDeleteItem() {
 		assertNotNull(itemRepository.findByItemId(item2Id).block());
 		

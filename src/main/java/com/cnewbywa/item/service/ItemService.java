@@ -27,6 +27,22 @@ public class ItemService {
 		return itemRepository.save(createItem(itemDto, user)).map(this::createResponseDto);
 	}
 	
+	public Mono<ItemResponseDto> updateItem(String id, ItemDto itemDto, String user) {
+		return itemRepository.findByItemId(id).switchIfEmpty(Mono.error(new ItemNotFoundException("Item not found"))).map(dbItem -> {
+			if (!itemDto.getName().equals(dbItem.getName())) {
+				dbItem.setName(itemDto.getName());
+			}
+			
+			if (!itemDto.getDescription().equals(dbItem.getDescription())) {
+				dbItem.setDescription(itemDto.getDescription());
+			}
+			
+			dbItem.setUpdatedBy(user);
+			
+			return dbItem;
+		}).flatMap(modifiedItem -> itemRepository.save(modifiedItem).map(this::createResponseDto));
+	}
+	
 	public Mono<Void> deleteItem(String id) {
 		return itemRepository.deleteByItemId(id);
 	}
@@ -46,6 +62,8 @@ public class ItemService {
 				.description(item.getDescription())
 				.createTime(item.getCreateTime())
 				.createdBy(item.getCreatedBy())
+				.updateTime(item.getUpdateTime())
+				.updatedBy(item.getUpdatedBy())
 				.build();
 	}
 }

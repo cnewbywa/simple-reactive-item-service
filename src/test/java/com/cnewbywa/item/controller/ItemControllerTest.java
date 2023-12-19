@@ -77,6 +77,26 @@ class ItemControllerTest {
 	}
 	
 	@Test
+	void testUpdateItem_Success() {
+		ItemResponseDto response = ItemResponseDto.builder().id(item1Id).name("Item 2").description("New description for item 2").build();
+		
+		ItemDto input = new ItemDto("Item 2", "New description for item 2");
+		
+		when(itemService.updateItem(item2Id, input, "test-user-id")).thenReturn(Mono.just(response));
+		
+		Mono<ItemResponseDto> responseMono = itemController.updateItem(createAuthentication("test-user-id"), item2Id, input);
+		
+		assertNotNull(responseMono);
+		
+		ItemResponseDto responseDto = responseMono.block();
+		
+		assertNotNull(responseDto);
+		assertResponseDto(response, responseDto);
+		
+		verify(itemService).updateItem(item2Id, input, "test-user-id");
+	}
+	
+	@Test
 	void testDeleteItem() {
 		when(itemService.deleteItem(item2Id)).thenReturn(Mono.empty().then());
 		

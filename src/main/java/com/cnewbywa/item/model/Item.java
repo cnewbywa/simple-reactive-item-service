@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.annotation.Version;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -31,6 +32,9 @@ public class Item {
 	@CreatedDate
 	private Instant createTime;
 	private String createdBy;
+	@LastModifiedDate
+	private Instant updateTime;
+	private String updatedBy;
 	@Version
 	private long version; 
 }

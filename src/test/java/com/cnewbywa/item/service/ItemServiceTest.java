@@ -11,6 +11,8 @@ import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -27,6 +29,9 @@ import reactor.test.StepVerifier;
 @ExtendWith(MockitoExtension.class)
 class ItemServiceTest {
 
+	@Captor
+	ArgumentCaptor<Item> itemCaptor;
+	
 	@InjectMocks
 	private ItemService itemService;
 	
@@ -69,13 +74,15 @@ class ItemServiceTest {
 		String name = "Item 1";
 		String description = "Description of item 1";
 		
-		Item item = Item.builder().itemId(item1Id).name(name).description(description).createTime(Instant.now()).build();
+		Item item = Item.builder().itemId(item1Id).name(name).description(description).createTime(Instant.now()).createdBy("user1").build();
 		
 		when(itemRepository.save(any(Item.class))).thenReturn(Mono.just(item));
 		
 		ItemDto itemDto = new ItemDto("Item 1", "Description of item 1");
 		
 		Mono<ItemResponseDto> responseMono = itemService.addItem(itemDto, "user1");
+		
+		// assert response
 		
 		assertNotNull(responseMono);
 		
@@ -84,8 +91,78 @@ class ItemServiceTest {
 		assertEquals(item1Id, response.getId());
 		assertEquals(itemDto.getName(), response.getName());
 		assertEquals(itemDto.getDescription(), response.getDescription());
+		assertNotNull(response.getCreateTime());
+		assertEquals("user1", response.getCreatedBy());
 		
-		verify(itemRepository).save(any(Item.class));
+		verify(itemRepository).save(itemCaptor.capture());
+		
+		// assert values in mocked save
+		
+		Item capturedItem = itemCaptor.getValue();
+		
+		assertNotNull(capturedItem);
+		assertNotNull(capturedItem.getItemId());
+		assertEquals(itemDto.getName(), capturedItem.getName());
+		assertEquals(itemDto.getDescription(), capturedItem.getDescription());
+		assertEquals("user1", capturedItem.getCreatedBy());
+	}
+	
+	@Test
+	void testUpdateItem_Success() {
+		String name = "Item 1";
+		String description = "Description of item 1";
+		
+		Item item = Item.builder().itemId(item1Id).name(name).description(description).createTime(Instant.now()).createdBy("user1").build();
+		
+		Item modifiedItem = Item.builder().itemId(item1Id).name(name).description("New description of item 1").createTime(item.getCreateTime()).createdBy("user1").updateTime(Instant.now()).updatedBy("user1").build();
+		
+		when(itemRepository.findByItemId(item1Id)).thenReturn(Mono.just(item));
+		
+		when(itemRepository.save(any(Item.class))).thenReturn(Mono.just(modifiedItem));
+		
+		ItemDto itemDto = new ItemDto("Item 1", "New description of item 1");
+		
+		Mono<ItemResponseDto> responseMono = itemService.updateItem(item1Id, itemDto, "user1");
+		
+		// assert response
+		
+		assertNotNull(responseMono);
+		
+		ItemResponseDto response = responseMono.block();
+		
+		assertEquals(item1Id, response.getId());
+		assertEquals(modifiedItem.getName(), response.getName());
+		assertEquals(modifiedItem.getDescription(), response.getDescription());
+		assertNotNull(response.getCreateTime());
+		assertEquals("user1", response.getCreatedBy());
+		assertNotNull(response.getUpdateTime());
+		assertEquals("user1", response.getUpdatedBy());
+		
+		verify(itemRepository).findByItemId(item1Id);
+		verify(itemRepository).save(itemCaptor.capture());
+		
+		// assert values in mocked save
+		
+		Item capturedItem = itemCaptor.getValue();
+		
+		assertNotNull(capturedItem);
+		assertEquals(item1Id, capturedItem.getItemId());
+		assertEquals(itemDto.getName(), capturedItem.getName());
+		assertEquals(itemDto.getDescription(), capturedItem.getDescription());
+		assertEquals("user1", capturedItem.getUpdatedBy());
+	}
+	
+	@Test
+	void testUpdateItem_Failure() {
+		ItemDto itemDto = new ItemDto("Item 9", "Description of item 9");
+		
+		when(itemRepository.findByItemId(item1Id)).thenReturn(Mono.empty());
+		
+		Mono<ItemResponseDto> responseMono = itemService.updateItem(item1Id, itemDto, "user1");
+		
+		StepVerifier.create(responseMono).expectError(ItemNotFoundException.class).verify();
+		
+		verify(itemRepository).findByItemId(item1Id);
 	}
 	
 	@Test
