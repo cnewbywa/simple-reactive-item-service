@@ -27,7 +27,6 @@ public class Item {
 	@NotBlank
 	private String name;
 	@Size(min = 3, max = 500)
-	@NotBlank
 	private String description;
 	@CreatedDate
 	private Instant createTime;

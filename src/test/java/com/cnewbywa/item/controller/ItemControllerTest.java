@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 
 import java.time.Instant;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -15,16 +16,22 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 
 import com.cnewbywa.item.model.ItemDto;
+import com.cnewbywa.item.model.ItemListResponseDto;
 import com.cnewbywa.item.model.ItemResponseDto;
+import com.cnewbywa.item.model.ItemsResponseDto;
 import com.cnewbywa.item.service.ItemService;
 
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.test.StepVerifier;
 
 @ExtendWith(MockitoExtension.class)
 class ItemControllerTest {
@@ -54,6 +61,99 @@ class ItemControllerTest {
 		assertResponseDto(response, responseDto);
 		
 		verify(itemService).getItem(item1Id);
+	}
+	
+	@Test
+	void testGetItems() {
+		ItemListResponseDto itemListResponseDto1 = ItemListResponseDto.builder().id(item1Id).name("Item 21").createTime(Instant.now()).build();
+		ItemListResponseDto itemListResponseDto2 = ItemListResponseDto.builder().id(item2Id).name("Item 22").createTime(Instant.now()).build();
+		
+		Sort sort = Sort.by(new Sort.Order(Sort.Direction.ASC, "name"));
+		
+		when(itemService.getItems(sort)).thenReturn(Flux.just(itemListResponseDto1, itemListResponseDto2));
+		
+		String[] sortOrder = new String[] { "name,asc" };
+		
+		Flux<ItemListResponseDto> responses = itemController.getItems(sortOrder);
+		
+		StepVerifier.create(responses)
+			.consumeNextWith(item -> {
+				assertListResponseDto(item, itemListResponseDto1);
+			})
+			.consumeNextWith(item -> {
+				assertListResponseDto(item, itemListResponseDto2);
+			})
+			.verifyComplete();
+	
+		verify(itemService).getItems(sort);
+	}
+	
+	@Test
+	void testGetItemsWithPaging() {
+		ItemListResponseDto itemListResponseDto1 = ItemListResponseDto.builder().id(item1Id).name("Item 21").createTime(Instant.now()).build();
+		ItemListResponseDto itemListResponseDto2 = ItemListResponseDto.builder().id(item2Id).name("Item 22").createTime(Instant.now()).build();
+		
+		ItemsResponseDto itemsResponseDto = ItemsResponseDto.builder()
+				.amount(2)
+				.totalAmount(10)
+				.items(List.of(itemListResponseDto1, itemListResponseDto2))
+				.build();
+		
+		Pageable pageable = PageRequest.of(0, 2, Sort.by(new Sort.Order(Sort.Direction.ASC, "name")));
+		
+		when(itemService.getItemsWithPaging(pageable)).thenReturn(Mono.just(itemsResponseDto));
+		
+		String[] sortOrder = new String[] { "name,asc" };
+		
+		Mono<ItemsResponseDto> responseMono = itemController.getItemsWithPaging(0, 2, sortOrder);
+		
+		assertNotNull(responseMono);
+		
+		ItemsResponseDto responseDto = responseMono.block();
+		
+		assertNotNull(responseDto);
+		assertEquals(2L, responseDto.getAmount());
+		assertEquals(10L, responseDto.getTotalAmount());
+		assertNotNull(responseDto.getItems());
+		assertEquals(2, responseDto.getItems().size());
+		assertListResponseDto(responseDto.getItems().get(0), itemListResponseDto1);
+		assertListResponseDto(responseDto.getItems().get(1), itemListResponseDto2);
+		
+		verify(itemService).getItemsWithPaging(pageable);
+	}
+	
+	@Test
+	void testGetItemsWithSkipAndTake() {
+		ItemListResponseDto itemListResponseDto1 = ItemListResponseDto.builder().id(item1Id).name("Item 21").createTime(Instant.now()).build();
+		ItemListResponseDto itemListResponseDto2 = ItemListResponseDto.builder().id(item2Id).name("Item 22").createTime(Instant.now()).build();
+		
+		ItemsResponseDto itemsResponseDto = ItemsResponseDto.builder()
+				.amount(2)
+				.totalAmount(10)
+				.items(List.of(itemListResponseDto1, itemListResponseDto2))
+				.build();
+		
+		Pageable pageable = PageRequest.of(0, 2, Sort.by(new Sort.Order(Sort.Direction.ASC, "name")));
+		
+		when(itemService.getItemsWithSkipAndTake(pageable)).thenReturn(Mono.just(itemsResponseDto));
+		
+		String[] sortOrder = new String[] { "name,asc" };
+		
+		Mono<ItemsResponseDto> responseMono = itemController.getItemsWithSkipAndTake(0, 2, sortOrder);
+		
+		assertNotNull(responseMono);
+		
+		ItemsResponseDto responseDto = responseMono.block();
+		
+		assertNotNull(responseDto);
+		assertEquals(2L, responseDto.getAmount());
+		assertEquals(10L, responseDto.getTotalAmount());
+		assertNotNull(responseDto.getItems());
+		assertEquals(2, responseDto.getItems().size());
+		assertListResponseDto(responseDto.getItems().get(0), itemListResponseDto1);
+		assertListResponseDto(responseDto.getItems().get(1), itemListResponseDto2);
+		
+		verify(itemService).getItemsWithSkipAndTake(pageable);
 	}
 	
 	@Test
@@ -122,5 +222,11 @@ class ItemControllerTest {
 		assertEquals(expectedResponse.getId(), actualResponse.getId());
 		assertEquals(expectedResponse.getName(), actualResponse.getName());
 		assertEquals(expectedResponse.getDescription(), actualResponse.getDescription());
+	}
+	
+	private void assertListResponseDto(ItemListResponseDto receivedItemListResponseDto, ItemListResponseDto originalItemListResponseDto) {
+		assertEquals(originalItemListResponseDto.getId(), receivedItemListResponseDto.getId());
+		assertEquals(originalItemListResponseDto.getName(), receivedItemListResponseDto.getName());
+		assertNotNull(receivedItemListResponseDto.getCreateTime());
 	}
 }
