@@ -66,7 +66,7 @@ class ItemServiceTest {
 	}
 	
 	@Test
-	void testGetItem_Failute() {
+	void testGetItem_Failure() {
 		when(itemRepository.findByItemId(item1Id)).thenReturn(Mono.empty());
 		
 		Mono<ItemResponseDto> responseMono = itemService.getItem(item1Id);
