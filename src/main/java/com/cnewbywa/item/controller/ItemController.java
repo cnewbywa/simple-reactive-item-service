@@ -37,7 +37,6 @@ import reactor.core.publisher.Mono;
 
 @RestController
 @RequestMapping("/items")
-@SecurityRequirement(name = "bearerAuth")
 @Slf4j
 public class ItemController {
 
@@ -49,6 +48,7 @@ public class ItemController {
 	
 	@GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.OK)
+	@SecurityRequirement(name = "bearerAuth")
 	public Mono<ItemResponseDto> getItem(@PathVariable String id) {
 		return itemService.getItem(id);
 	}
@@ -79,18 +79,21 @@ public class ItemController {
 	
 	@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.CREATED)
+	@SecurityRequirement(name = "bearerAuth")
 	public Mono<ItemResponseDto> addItem(Authentication authentication, @RequestBody @Nonnull ItemDto item) {
 		return itemService.addItem(item, getLoggedInUser(authentication));
 	}
 	
 	@PutMapping(path = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.OK)
+	@SecurityRequirement(name = "bearerAuth")
 	public Mono<ItemResponseDto> updateItem(Authentication authentication, @PathVariable String id, @RequestBody @Nonnull ItemDto item) {
 		return itemService.updateItem(id, item, getLoggedInUser(authentication));
 	}
 	
 	@DeleteMapping(path = "/{id}")
 	@ResponseStatus(HttpStatus.OK)
+	@SecurityRequirement(name = "bearerAuth")
 	public Mono<Void> deleteItem(@PathVariable String id) {
 		return itemService.deleteItem(id);
 	}
