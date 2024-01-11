@@ -16,7 +16,7 @@ spring:
             type: PKCS12
 
 server:
-  port: 9443
+  port: 8443
   ssl:
     bundle: simple-rest-service
     
