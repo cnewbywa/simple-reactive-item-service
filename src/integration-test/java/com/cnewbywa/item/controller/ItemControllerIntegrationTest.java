@@ -57,7 +57,7 @@ class ItemControllerIntegrationTest {
 	
 	@BeforeEach
 	void setupEach() {
-		webClient = webClient.mutateWith(SecurityMockServerConfigurers.mockJwt());
+		//webClient = webClient.mutateWith(SecurityMockServerConfigurers.mockJwt());
 		
 		item1Id = itemRepository.save(Item.builder().name("Item 1").description("Description for Item 1").createdBy("user").build()).block().getItemId();
 		item2Id = itemRepository.save(Item.builder().name("Item 2").description("Description for Item 2").createdBy("user").build()).block().getItemId();
@@ -72,6 +72,7 @@ class ItemControllerIntegrationTest {
 	@Test
 	void testGetItem() {
 		webClient
+			.mutateWith(SecurityMockServerConfigurers.mockJwt())
         	.get().uri("/items/" + item1Id)
         	.exchange()
         	.expectStatus().isOk()
@@ -87,6 +88,14 @@ class ItemControllerIntegrationTest {
     			assertNotNull(dto.getCreateTime());
     			assertEquals("user", dto.getCreatedBy());
     		});
+	}
+	
+	@Test
+	void testGetItemWithoutAuthenticatedUser() {
+		webClient
+        	.get().uri("/items/" + item1Id)
+        	.exchange()
+        	.expectStatus().isUnauthorized();
 	}
 	
 	@Test
@@ -274,6 +283,7 @@ class ItemControllerIntegrationTest {
 	@Test
 	void testGetItem_NotFound() {
 		webClient
+			.mutateWith(SecurityMockServerConfigurers.mockJwt())
         	.get().uri("/items/2d579439-1d07-4411-9be1-c2f466244f5e")
         	.exchange()
         	.expectStatus().isNotFound();
@@ -284,6 +294,7 @@ class ItemControllerIntegrationTest {
 		ItemDto input = new ItemDto("Test item", "Test item description");
 		
 		webClient
+			.mutateWith(SecurityMockServerConfigurers.mockJwt())
         	.post().uri("/items").bodyValue(input)
         	.exchange()
         	.expectStatus().isCreated()
@@ -306,6 +317,7 @@ class ItemControllerIntegrationTest {
 		ItemDto input = new ItemDto("Item 1", "New description for Item 1");
 		
 		webClient
+			.mutateWith(SecurityMockServerConfigurers.mockJwt())
         	.put().uri("/items/" + item1Id).bodyValue(input)
         	.exchange()
         	.expectStatus().isOk()
@@ -328,6 +340,7 @@ class ItemControllerIntegrationTest {
 		ItemDto input = new ItemDto("Item 9", "New description for Item 9");
 		
 		webClient
+			.mutateWith(SecurityMockServerConfigurers.mockJwt())
         	.put().uri("/items/2d579439-1d07-4411-9be1-c2f466244f5e").bodyValue(input)
         	.exchange()
         	.expectStatus().isNotFound();
@@ -338,6 +351,7 @@ class ItemControllerIntegrationTest {
 		assertNotNull(itemRepository.findByItemId(item2Id).block());
 		
 		webClient
+			.mutateWith(SecurityMockServerConfigurers.mockJwt())
         	.delete().uri("/items/" + item2Id)
         	.exchange()
         	.expectStatus().isOk()
