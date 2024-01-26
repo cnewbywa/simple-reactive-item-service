@@ -354,7 +354,7 @@ class ItemControllerIntegrationTest {
 			.mutateWith(SecurityMockServerConfigurers.mockJwt())
         	.delete().uri("/items/" + item2Id)
         	.exchange()
-        	.expectStatus().isOk()
+        	.expectStatus().isNoContent()
         	.expectBody().isEmpty();
 		
 		assertNull(itemRepository.findByItemId(item2Id).block());

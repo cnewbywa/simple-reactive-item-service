@@ -92,7 +92,7 @@ public class ItemController {
 	}
 	
 	@DeleteMapping(path = "/{id}")
-	@ResponseStatus(HttpStatus.OK)
+	@ResponseStatus(HttpStatus.NO_CONTENT)
 	@SecurityRequirement(name = "bearerAuth")
 	public Mono<Void> deleteItem(@PathVariable String id) {
 		return itemService.deleteItem(id);
